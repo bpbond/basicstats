@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+set.seed(20210102)
 ```
 
 ## Linear models
@@ -36,6 +37,17 @@ dat$m1 <- predict(m1)
 ggplot(dat, aes(x, y, color = group)) + geom_point() +
   geom_line(aes(y = m1), color = "black")
 ```
+
+The model has an intercept of **`r round(coefficients(m1)[1], 3)`**, which is _not_ significantly different from zero (as the p-value is `r round(summary(m1)$coefficients[1, 4], 3)`).
+
+The model's best-fit slope is **`r round(coefficients(m1)[2], 3)`**.
+The p-value for the slope is very small, strong evidence *against* the "null
+hypothesis": that there is no relationship between _x_ and _y_. 
+
+In other words, there's a strong and statistically significant correlation 
+between these two variables, explaining about 
+`r round(summary(m1)$r.squared * 100, 0)`% (from the R^2^) 
+of the variability in _y_.
 
 ## Group as a factor but affects intercept only
 
