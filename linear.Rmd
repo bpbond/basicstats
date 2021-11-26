@@ -51,22 +51,23 @@ The model has an intercept of **`r round(coefficients(m1)[1], 3)`**, which is _n
 
 The model's best-fit slope is **`r round(coefficients(m1)[2], 3)`**.
 The p-value for the slope is very small, strong evidence *against* the "null
-hypothesis" that there is _no_ relationship between _x_ and _y_. (Because there's only a single term in the model, the p-value for the slope is exactly the same as the p-value for the overall model, at the bottom.)
+hypothesis" that there is _no_ relationship between _x_ and _y_.
 
-In other words, there's a strong and statistically significant correlation 
+Because there's only a single term in the model, the p-value for the slope is exactly the same as the p-value for the overall model, at the bottom. In other words, there's a strong and statistically significant correlation 
 between these two variables, explaining about 
-`r round(summary(m1)$r.squared * 100, 0)`% (from the R^2^) 
+`r round(summary(m1)$adj.r.squared * 100, 0)`% (from the adjusted R^2^) 
 of the variability in _y_.
 
 ```{r m1-plot}
 dat$m1 <- predict(m1)
-ggplot(dat, aes(x, y, color = group)) + geom_point(size = 4) +
+ggplot(dat, aes(x, y, color = group)) +
+  geom_point(size = 4) +
   geom_line(aes(y = m1), linetype = 2, color = "black")
 ```
 
-Unfortunately, if we plot the **model residuals** (along with a loess smoother, in blue, to same it easier to see trends), it's obvious that this model is not satisfactory:
+Unfortunately, if we plot the **model residuals** (the difference between the _predicted_ values and the _actual_ y values), it's obvious that this model is not satisfactory. 
 
-```{r, echo=FALSE, message=FALSE}
+```{r, message=FALSE}
 ggplot(dat, aes(m1, y - m1, color = group)) + 
   xlab(expression(Predicted~value~(hat(y)))) + 
   ylab(expression(Residual~(y-hat(y)))) +
@@ -74,16 +75,26 @@ ggplot(dat, aes(m1, y - m1, color = group)) +
   geom_smooth(aes(group = 1), se = FALSE)
 ```
 
-The residuals of a linear model should be **homoschedastic**: normally distributed with a mean of zero and roughly constant variance. We can test for this using a chi-squared (χ^2^) test:
+The blue loess smoother simply makes it easier to see trends.
+
+**Note:** We can also just use the `plot` function to make a residual plot, as well as visualize other model diagnostics:
+
+```{r}
+plot(m1, which = 1)
+```
+
+The problem is that the residuals of a linear model should be **homoschedastic**: [normally distributed](https://en.wikipedia.org/wiki/Normal_distribution) with a mean of zero and roughly constant variance. We can test for this using a chi-squared (χ^2^) test:
 
 ```{r, message=FALSE}
 library(olsrr)
 ols_test_breusch_pagan(m1)
 ```
 
-So this model has **heteroschedastic** residuals. We need to do better!
+So this model has **heteroschedastic** residuals; more specifically, in tends to overpredict group `A` and underpredict group `B`.
 
-## Group as a factor but affects intercept only
+We need to do better!
+
+## Group as a factor that affects intercept only
 
 We know we have two groups in our data, `A` and `B`; maybe observations from these groups are systematically different in some way, i.e. there's a constant difference between them?
 
@@ -92,9 +103,25 @@ m2 <- lm(y ~ x + group, data = dat)
 summary(m2)
 ```
 
-Let's take a close look at this fitted model. TODO
+Let's take a close look at this fitted model.
 
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE}
+sm2 <- summary(m2)$coefficients
+```
+
+The model has an overall intercept of **`r round(sm2[1, 1], 3)`**, which is significantly different from zero (as the p-value is `r round(sm2[1, 4], 3)`). **This is the intercept for the `A` group.**
+
+The intercept for the `B` group is `r round(sm2[1, 1], 3)` + `r round(sm2[3, 1], 3)` = **`r round(sm2[1, 1] + sm2[3, 1], 3)`**. This is significantly different from the `A` group, because the p-value for `groupB` is **`r sm2[3, 4]`** (i.e. it's very small).
+
+The model's slope is **`r round(sm2[2, 1], 3)`**.
+The p-value for the slope is very small, strong evidence *against* the "null
+hypothesis" that there is _no_ overall relationship between _x_ and _y_. In other words, the slope is statistically different from zero.
+
+Remember, in our model specification we did not allow `group` to affect the slope parameter.
+
+Visualizing the fitted model and its residuals:
+
+```{r echo=FALSE, fig.show="hold", message=FALSE, out.width="50%"}
 dat$m2 <- predict(m2)
 ggplot(dat, aes(x, y, color = group)) + 
   geom_point(size = 4) +
@@ -105,17 +132,24 @@ ggplot(dat, aes(m2, y - m2, color = group)) +
   ylab(expression(Residual~(y-hat(y)))) +
   geom_point(size = 4) + 
   geom_smooth(aes(group = 1), se = FALSE)
+#plot(m2, which = 1)
 ```
 
-## Group as a factor but affects slope only
+We've made progress! Note that this new models explains 
+`r round(summary(m2)$adj.r.squared * 100, 0)`% of the variability in _y_, a huge improvement.
+
+But the residual plot is still pretty weird looking, because we're underpredicting `A` (and overpredicting `B`) at low `x` values, and overpredicting `A` (and underpredicting `B`) at high `x`.
+
+## Group as a factor that affects slope only
+
+If we allow `group` to _interact_ with _x_, then we are fitting a model in which slope (but not intercept) changes with `group`: 
 
 ```{r m3}
 m3 <- lm(y ~ x : group, data = dat)
 summary(m3)
 ```
 
-
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, message=FALSE, out.width="50%"}
 dat$m3 <- predict(m3)
 ggplot(dat, aes(x, y, color = group)) + 
   geom_point(size = 4) +
@@ -126,6 +160,7 @@ ggplot(dat, aes(m3, y - m3, color = group)) +
   ylab(expression(Residual~(y-hat(y)))) +
   geom_point(size = 4) + 
   geom_smooth(aes(group = 1), se = FALSE)
+#plot(m3, which = 1)
 ```
 
 
@@ -137,7 +172,7 @@ summary(m4)
 ```
 
 
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, message=FALSE, out.width="50%"}
 dat$m4 <- predict(m4)
 ggplot(dat, aes(x, y, color = group)) + 
   geom_point(size = 4) +
@@ -148,6 +183,7 @@ ggplot(dat, aes(m4, y - m4, color = group)) +
   ylab(expression(Residual~(y-hat(y)))) +
   geom_point(size = 4) + 
   geom_smooth(aes(group = 1), se = FALSE)
+#plot(m4, which = 1)
 ```
 
 ## Transformations
@@ -192,4 +228,3 @@ plot(pm3, which = 1)
 ```
 
 The other, and probably best, option would be to use a _nonlinear_ model.
-
