@@ -15,7 +15,7 @@ theme_set(theme_bw())
 
 # Linear models and ordinary least squares regression
 
-**Linear regression** models the relationship between a scalar response and one or more explanatory variables (also known as dependent and independent variables)...the relationships are modeled using linear predictor functions whose unknown model parameters are estimated from the data. Such models are called linear models.
+**Linear regression** models the relationship between a scalar response (dependent variable) and one or more explanatory variables (independent variables) using linear predictor functions whose unknown model parameters are estimated from the data.
 
 "Linear" here means _linear in the parameters_, not necessarily that the relationship is a straight line.
 
@@ -33,12 +33,12 @@ In linear regression, the observations (red) are assumed to be the result of ran
 
 Linear regression models are often fitted using the _least squares_ approach, but they may also be fitted in other ways.
 
-**Ordinary least squares** (OLS) is a method for estimating the unknown parameters in a linear regression model. OLS chooses the parameters of a linear function of a set of explanatory variables by minimizing the _sum of the squares_ of the differences between the dependent variable and those predicted by the linear function of the independent variable (i.e., the green lines in the figure above). Mathematically, this can be expressed by a relatively simple formula and solved analytically.
+**Ordinary least squares** (OLS) is a method for estimating the unknown parameters in a linear regression model. OLS chooses the parameters of a linear function by minimizing the _sum of the squares_ of the differences between the dependent variable and those predicted by the linear function of the independent variable (i.e., the green lines in the figure above). Mathematically, this can be expressed by a relatively simple formula and solved analytically.
 
 # Fitting and assessing linear models
 
 ```{r fake}
-# Generate some fake data
+# Generate some fake data for two groups, A and B
 N <- 15
 Aslope <- 1
 Bslope <- 3
@@ -62,6 +62,7 @@ ggplot(dat, aes(x, y, color = group)) + geom_point(size = 4)
 ## Simplest model (no groups)
 
 ```{r m1}
+# "y is a linear function of x"
 m1 <- lm(y ~ x, data = dat)
 summary(m1)
 ```
@@ -109,15 +110,16 @@ library(olsrr)
 ols_test_breusch_pagan(m1)
 ```
 
-So this model has **heteroschedastic** residuals; more specifically, in tends to overpredict group `A` and underpredict group `B`.
+So this model has **heteroschedastic** residuals; more specifically, it overpredicts group `A` and underpredicts `B`.
 
-We need to do better!
+We can do better!
 
 ## Group as a factor that affects intercept only
 
 We know we have two groups in our data, `A` and `B`; maybe observations from these groups are systematically different in some way, i.e. there's a constant difference between them?
 
 ```{r m2}
+# "y is a linear function of x plus some constant group-dependent offset"
 m2 <- lm(y ~ x + group, data = dat)
 summary(m2)
 ```
@@ -141,8 +143,6 @@ Remember, in our model specification above we did not allow `group` to affect th
 We've made progress! This new model explains 
 `r round(summary(m2)$adj.r.squared * 100, 0)`% of the variability in _y_, a huge improvement, and has a much lower error.
 
-Visualizing the fitted model and its residuals:
-
 ```{r echo=FALSE, fig.show="hold", message=FALSE, out.width="50%"}
 dat$m2 <- predict(m2)
 ggplot(dat, aes(x, y, color = group)) + 
@@ -163,6 +163,7 @@ The residual plot is still pretty weird looking, because we're underpredicting `
 If we allow `group` to _interact_ with _x_, then we are fitting a model in which slope (but not intercept) changes with `group`: 
 
 ```{r m3}
+# "y is a linear function of x whose slope is group-dependent"
 m3 <- lm(y ~ x : group, data = dat)
 summary(m3)
 ```
@@ -200,6 +201,7 @@ This...this is a pretty good looking model. It explains almost all the variabili
 Should we try a model with `group` affecting _both_ slope and intercept? **It depends on our understanding of the system we're trying to model.** Does it make sense for these models to have a common intercept? In many cases, probably not: the groups would be expected to be completely different. 
 
 ```{r m4}
+# "y is a group-dependent linear function of x"
 m4 <- lm(y ~ x * group, data = dat)
 summary(m4)
 ```
@@ -233,7 +235,7 @@ ggplot(dat, aes(m4, y - m4, color = group)) +
 
 ## Overfitting and removing terms
 
-All the terms in our final model above are statistically significant. If a term isn't significant, however, we'd generally like to remove it from the model. This can be done by hand or using functions such as `MASS::stepAIC`.
+All the terms in our final model above are statistically significant. If a term isn't significant, however, we'd generally like to remove it from the model. This can be done by hand or using functions such as `MASS::stepAIC` or `olsrr::ols_step_both_p`.
 
 An important principle of model-building is parsimony: we'd like the simplest, most explainable model. In particular we don't want to **overfit**--this will leave us with a too-specific model that doesn't generalize to new data.
 
@@ -290,3 +292,11 @@ plot(pm3, which = 1)
 ```
 
 The other, and probably best, option would be to use a _nonlinear_ model for these data.
+
+# The End
+
+The repository for this document is [here](https://github.com/bpbond/linear).
+
+```{r, echo=FALSE}
+sessionInfo()
+```
