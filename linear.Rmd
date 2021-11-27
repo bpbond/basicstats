@@ -1,5 +1,5 @@
 ---
-title: "linear"
+title: "Linear models"
 author: "Ben"
 date: "11/2/2021"
 output: html_document
@@ -13,9 +13,7 @@ library(ggplot2)
 theme_set(theme_bw())
 ```
 
-# Linear models
-
-## Linear models and ordinary least squares regression
+# Linear models and ordinary least squares regression
 
 **Linear regression** models the relationship between a scalar response and one or more explanatory variables (also known as dependent and independent variables)...the relationships are modeled using linear predictor functions whose unknown model parameters are estimated from the data. Such models are called linear models.
 
@@ -35,9 +33,9 @@ In linear regression, the observations (red) are assumed to be the result of ran
 
 Linear regression models are often fitted using the _least squares_ approach, but they may also be fitted in other ways.
 
-**Ordinary least squares** (OLS) is a type of linear least squares method for estimating the unknown parameters in a linear regression model. OLS chooses the parameters of a linear function of a set of explanatory variables by minimizing the _sum of the squares_ of the differences between the dependent variable and those predicted by the linear function of the independent variable (i.e., the green lines in the figure above). Mathematically, this can be expressed by a relatively simple formula.
+**Ordinary least squares** (OLS) is a method for estimating the unknown parameters in a linear regression model. OLS chooses the parameters of a linear function of a set of explanatory variables by minimizing the _sum of the squares_ of the differences between the dependent variable and those predicted by the linear function of the independent variable (i.e., the green lines in the figure above). Mathematically, this can be expressed by a relatively simple formula and solved analytically.
 
-## Fitting and assessing linear models
+# Fitting and assessing linear models
 
 ```{r fake}
 # Generate some fake data
@@ -47,14 +45,16 @@ Bslope <- 3
 Aintercept <- 0
 Bintercept <- -3
 Nseq <- seq_len(N)
-dat1 <- data.frame(group = "A",
+Adat <- data.frame(group = "A",
                    x = Nseq,
-                   y = Nseq * Aslope + rnorm(N) * 2 + Aintercept)
-dat2 <- data.frame(group = "B",
+                   y = Nseq * Aslope + Aintercept)
+Bdat <- data.frame(group = "B",
                    x = Nseq,
-                   y = Nseq * Bslope + rnorm(N) * 2 + Bintercept)
+                   y = Nseq * Bslope + Bintercept)
+dat <- rbind(Adat, Bdat)
 
-dat <- rbind(dat1, dat2)
+# Add some random noise
+dat$y <- dat$y + rnorm(nrow(dat)) * 2
 
 ggplot(dat, aes(x, y, color = group)) + geom_point(size = 4)
 ```
@@ -70,9 +70,9 @@ The model has an intercept of **`r round(coefficients(m1)[1], 3)`**, which is _n
 
 The model's best-fit slope is **`r round(coefficients(m1)[2], 3)`**.
 The p-value for the slope is very small, strong evidence *against* the "null
-hypothesis" that there is _no_ relationship between _x_ and _y_.
+hypothesis" that there is _no_ relationship between _x_ and _y_. Because there's only a single term in the model, the p-value for the slope is exactly the same as the p-value for the overall model, at the bottom. 
 
-Because there's only a single term in the model, the p-value for the slope is exactly the same as the p-value for the overall model, at the bottom. In other words, there's a strong and statistically significant correlation 
+In other words, there's a strong and statistically significant correlation 
 between these two variables, explaining about 
 `r round(summary(m1)$adj.r.squared * 100, 0)`% (from the adjusted R^2^) 
 of the variability in _y_.
@@ -94,7 +94,7 @@ ggplot(dat, aes(m1, y - m1, color = group)) +
   geom_smooth(aes(group = 1), se = FALSE)
 ```
 
-The blue loess smoother simply makes it easier to see trends.
+(The blue loess smoother simply makes it easier to see trends.)
 
 **Note:** We can also just use the `plot` function to make a residual plot, as well as visualize other model diagnostics:
 
@@ -136,7 +136,10 @@ The model's slope is **`r round(sm2[2, 1], 3)`**.
 The p-value for the slope is very small, strong evidence *against* the "null
 hypothesis" that there is _no_ overall relationship between _x_ and _y_. In other words, the slope is statistically different from zero.
 
-Remember, in our model specification we did not allow `group` to affect the slope parameter.
+Remember, in our model specification above we did not allow `group` to affect the slope parameter.
+
+We've made progress! This new model explains 
+`r round(summary(m2)$adj.r.squared * 100, 0)`% of the variability in _y_, a huge improvement, and has a much lower error.
 
 Visualizing the fitted model and its residuals:
 
@@ -154,10 +157,7 @@ ggplot(dat, aes(m2, y - m2, color = group)) +
 #plot(m2, which = 1)
 ```
 
-We've made progress! Note that this new models explains 
-`r round(summary(m2)$adj.r.squared * 100, 0)`% of the variability in _y_, a huge improvement.
-
-But the residual plot is still pretty weird looking, because we're underpredicting `A` (and overpredicting `B`) at low `x` values, and overpredicting `A` (and underpredicting `B`) at high `x`.
+The residual plot is still pretty weird looking, because we're underpredicting `A` (and overpredicting `B`) at low `x` values, and overpredicting `A` (and underpredicting `B`) at high `x`.
 
 ## Group as a factor that affects slope only
 
@@ -167,6 +167,17 @@ If we allow `group` to _interact_ with _x_, then we are fitting a model in which
 m3 <- lm(y ~ x : group, data = dat)
 summary(m3)
 ```
+
+```{r, echo=FALSE}
+sm3 <- summary(m3)$coefficients
+```
+
+The model has a single intercept of **`r round(sm3[1, 1], 3)`**, which is _not_ significantly different from zero.
+
+The best-fit slope for the `A` group is **`r round(sm2[2, 1], 3)`**. The slope for the `B` group is `r round(sm3[2, 1], 3)` + `r round(sm3[3, 1], 3)` = **`r round(sm3[2, 1] + sm3[3, 1], 3)`**. This is significantly different from the `A` group, because the p-value for `x:groupB` is **`r sm2[3, 4]`**.
+
+This third model explains 
+`r round(summary(m3)$adj.r.squared * 100, 0)`% of the variability in _y_.
 
 ```{r, echo=FALSE, message=FALSE, message=FALSE, out.width="50%"}
 dat$m3 <- predict(m3)
@@ -182,14 +193,29 @@ ggplot(dat, aes(m3, y - m3, color = group)) +
 #plot(m3, which = 1)
 ```
 
+This...this is a pretty good looking model. It explains almost all the variability in the data, and the residual plot looks good.
 
 ## Group as a factor affecting both slope and intercept
+
+Should we try a model with `group` affecting _both_ slope and intercept? **It depends on our understanding of the system we're trying to model.** Does it make sense for these models to have a common intercept? In many cases, probably not: the groups would be expected to be completely different. 
 
 ```{r m4}
 m4 <- lm(y ~ x * group, data = dat)
 summary(m4)
 ```
 
+```{r, echo=FALSE}
+sm4 <- summary(m4)$coefficients
+```
+
+Our final model. How did OLS do?
+
+Term        | True value     | Estimate
+----------- | -------------- | ---------
+A intercept | `r Aintercept` | `r round(sm4[1, 1], 3)`
+B intercept | `r Bintercept` | `r round(sm4[1, 1], 3)` + `r round(sm4[3, 1], 3)` = `r round(sm4[1, 1] + sm4[3, 1], 3)`
+A slope     | `r Aslope`     | `r round(sm4[2, 1], 3)`
+B slope     | `r Bslope`     | `r round(sm4[2, 1], 3)` + `r round(sm4[4, 1], 3)` = `r round(sm4[2, 1] + sm4[4, 1], 3)`
 
 ```{r, echo=FALSE, message=FALSE, message=FALSE, out.width="50%"}
 dat$m4 <- predict(m4)
