@@ -8,15 +8,36 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 set.seed(20211002)
+
+library(ggplot2)
+theme_set(theme_bw())
 ```
 
-# Ordinary least squares regression and linear models
+# Linear models
 
-* What is OLS?
-* What is a "linear model"
-* Error
+## Linear models and ordinary least squares regression
 
-## Linear models
+**Linear regression** models the relationship between a scalar response and one or more explanatory variables (also known as dependent and independent variables)...the relationships are modeled using linear predictor functions whose unknown model parameters are estimated from the data. Such models are called linear models.
+
+"Linear" here means _linear in the parameters_, not necessarily that the relationship is a straight line.
+
+```{r echo=FALSE, fig.height=3, fig.width=5}
+d <- data.frame(x = 1:4, y = c(6, 5, 7, 10))
+m <- lm(y ~ x, data = d)
+d$pred <- predict(m)
+ggplot(d, aes(x, y)) + 
+  geom_segment(aes(xend = x, yend = pred), size = 1.5, color = "green") +
+  geom_point(color = "red", size = 4) +
+  geom_line(aes(y = pred), size = 2, color = "blue")
+```
+
+In linear regression, the observations (red) are assumed to be the result of random deviations (green) from an underlying relationship (blue) between a dependent variable (y) and an independent variable (x).
+
+Linear regression models are often fitted using the _least squares_ approach, but they may also be fitted in other ways.
+
+**Ordinary least squares** (OLS) is a type of linear least squares method for estimating the unknown parameters in a linear regression model. OLS chooses the parameters of a linear function of a set of explanatory variables by minimizing the _sum of the squares_ of the differences between the dependent variable and those predicted by the linear function of the independent variable (i.e., the green lines in the figure above). Mathematically, this can be expressed by a relatively simple formula.
+
+## Fitting and assessing linear models
 
 ```{r fake}
 # Generate some fake data
@@ -35,8 +56,6 @@ dat2 <- data.frame(group = "B",
 
 dat <- rbind(dat1, dat2)
 
-library(ggplot2)
-theme_set(theme_bw())
 ggplot(dat, aes(x, y, color = group)) + geom_point(size = 4)
 ```
 
