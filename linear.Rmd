@@ -97,12 +97,6 @@ ggplot(dat, aes(m1, y - m1, color = group)) +
 
 (The blue loess smoother simply makes it easier to see trends.)
 
-**Note:** We can also just use the `plot` function to make a residual plot, as well as visualize other model diagnostics:
-
-```{r}
-plot(m1, which = 1)
-```
-
 The problem is that the residuals of a linear model should be **homoschedastic**: [normally distributed](https://en.wikipedia.org/wiki/Normal_distribution) with a mean of zero and roughly constant variance. We can test for this using a chi-squared (χ^2^) test:
 
 ```{r, message=FALSE}
@@ -232,7 +226,6 @@ ggplot(dat, aes(m4, y - m4, color = group)) +
   geom_smooth(aes(group = 1), se = FALSE)
 ```
 
-
 ## Overfitting and removing terms
 
 All the terms in our final model above are statistically significant. If a term isn't significant, however, we'd generally like to remove it from the model. This can be done by hand or using functions such as `MASS::stepAIC` or `olsrr::ols_step_both_p`.
@@ -250,6 +243,28 @@ ggplot(dat, aes(x, y, color = group)) +
   geom_point(size = 4) +
   geom_line(aes(y = m4poly), linetype = 2)
 ```
+
+## Asssessing models
+
+Above we used ggplot2 to make residuals 'by hand', but we can also just use the `plot` function to make a residual plot, as well as visualize other model diagnostics:
+
+```{r}
+cars_model <- lm(dist ~ speed, data = cars)
+plot(cars_model, which = 1)
+```
+
+By default `plot.lm` produces four key plots:
+
+```{r, fig.show="hold", out.width="50%"}
+plot(cars_model)
+```
+
+These are:
+
+* Top left: residual plot. Residuals should have constant variance.
+* Top right: normal Q-Q plot. This lets you assess whether the residuals are normally distributed, as they should be.
+* Bottom left: scale-location plot. This shows whether residuals are spread equally along the ranges of predictor variables.
+* Bottom right: residuals versus leverage plot. This plots [Cook's distance](https://en.wikipedia.org/wiki/Cook's_distance) to detect whether any outliers have substantial influence on the regression results.
 
 ## Transformations
 
