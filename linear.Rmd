@@ -1,7 +1,7 @@
 ---
 title: "Linear models"
 author: "Ben"
-date: "11/2/2021"
+date: "29 November 2021"
 output: html_document
 ---
 
@@ -154,7 +154,6 @@ ggplot(dat, aes(m2, y - m2, color = group)) +
   ylab(expression(Residual~(y-hat(y)))) +
   geom_point(size = 4) + 
   geom_smooth(aes(group = 1), se = FALSE)
-#plot(m2, which = 1)
 ```
 
 The residual plot is still pretty weird looking, because we're underpredicting `A` (and overpredicting `B`) at low `x` values, and overpredicting `A` (and underpredicting `B`) at high `x`.
@@ -174,12 +173,14 @@ sm3 <- summary(m3)$coefficients
 
 The model has a single intercept of **`r round(sm3[1, 1], 3)`**, which is _not_ significantly different from zero.
 
-The best-fit slope for the `A` group is **`r round(sm2[2, 1], 3)`**. The slope for the `B` group is `r round(sm3[2, 1], 3)` + `r round(sm3[3, 1], 3)` = **`r round(sm3[2, 1] + sm3[3, 1], 3)`**. This is significantly different from the `A` group, because the p-value for `x:groupB` is **`r sm2[3, 4]`**.
+The best-fit slope for the `A` group is **`r round(sm2[2, 1], 3)`**. 
+
+The slope for the `B` group is `r round(sm3[2, 1], 3)` + `r round(sm3[3, 1], 3)` = **`r round(sm3[2, 1] + sm3[3, 1], 3)`**. This is significantly different from the `A` group, because the p-value for `x:groupB` is **`r sm2[3, 4]`**.
 
 This third model explains 
 `r round(summary(m3)$adj.r.squared * 100, 0)`% of the variability in _y_.
 
-```{r, echo=FALSE, message=FALSE, message=FALSE, out.width="50%"}
+```{r, echo=FALSE, message=FALSE, out.width="50%"}
 dat$m3 <- predict(m3)
 ggplot(dat, aes(x, y, color = group)) + 
   geom_point(size = 4) +
@@ -190,7 +191,6 @@ ggplot(dat, aes(m3, y - m3, color = group)) +
   ylab(expression(Residual~(y-hat(y)))) +
   geom_point(size = 4) + 
   geom_smooth(aes(group = 1), se = FALSE)
-#plot(m3, which = 1)
 ```
 
 This...this is a pretty good looking model. It explains almost all the variability in the data, and the residual plot looks good.
@@ -217,7 +217,7 @@ B intercept | `r Bintercept` | `r round(sm4[1, 1], 3)` + `r round(sm4[3, 1], 3)`
 A slope     | `r Aslope`     | `r round(sm4[2, 1], 3)`
 B slope     | `r Bslope`     | `r round(sm4[2, 1], 3)` + `r round(sm4[4, 1], 3)` = `r round(sm4[2, 1] + sm4[4, 1], 3)`
 
-```{r, echo=FALSE, message=FALSE, message=FALSE, out.width="50%"}
+```{r, echo=FALSE, message=FALSE, out.width="50%"}
 dat$m4 <- predict(m4)
 ggplot(dat, aes(x, y, color = group)) + 
   geom_point(size = 4) +
@@ -228,14 +228,32 @@ ggplot(dat, aes(m4, y - m4, color = group)) +
   ylab(expression(Residual~(y-hat(y)))) +
   geom_point(size = 4) + 
   geom_smooth(aes(group = 1), se = FALSE)
-#plot(m4, which = 1)
+```
+
+
+## Overfitting and removing terms
+
+All the terms in our final model above are statistically significant. If a term isn't significant, however, we'd generally like to remove it from the model. This can be done by hand or using functions such as `MASS::stepAIC`.
+
+An important principle of model-building is parsimony: we'd like the simplest, most explainable model. In particular we don't want to **overfit**--this will leave us with a too-specific model that doesn't generalize to new data.
+
+```{r m4-poly}
+# Fit a six-term polynomial (x + x^2 + x^3 + ...)
+m4poly <- lm(y ~ poly(x, 6) * group, data = dat)
+```
+
+```{r, echo=FALSE, message=FALSE}
+dat$m4poly <- predict(m4poly)
+ggplot(dat, aes(x, y, color = group)) + 
+  geom_point(size = 4) +
+  geom_line(aes(y = m4poly), linetype = 2)
 ```
 
 ## Transformations
 
 Some problems--in particular, heteroschedasticity--may be addressable by _transforming_ the data so that we can model it successfully using a linear model.
 
-For example, look at the `Puromycin` dataset and fit a basic one-term linear model. Obviously it doesn't work very well:
+For example, look at the `Puromycin` dataset and fit a basic one-term linear model. Obviously it doesn't work very well, because the data don't fall in a straight line:
 
 ```{r, echo=FALSE, message=FALSE, fig.show="hold", out.width="50%"}
 pm1 <- lm(rate ~ conc * state, data = Puromycin)
@@ -245,8 +263,7 @@ ggplot(Puromycin, aes(conc, rate, color = state)) +
 plot(pm1, which = 1)
 ```
 
-Use a polynomial:
-
+Try a polynomial (this is still a _linear model_; see above):
 
 ```{r}
 pm2 <- lm(rate ~ poly(conc, 2) * state, data = Puromycin)
@@ -272,4 +289,4 @@ ggplot(Puromycin, aes(conc, rate, color = state)) +
 plot(pm3, which = 1)
 ```
 
-The other, and probably best, option would be to use a _nonlinear_ model.
+The other, and probably best, option would be to use a _nonlinear_ model for these data.
