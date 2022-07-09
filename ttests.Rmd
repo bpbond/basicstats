@@ -12,7 +12,7 @@ set.seed(20211002)
 library(tibble)
 library(tidyr)
 library(ggplot2)
-theme_set(theme_bw())
+theme_set(theme_minimal())
 ```
 
 # How do we test for group differences?
@@ -28,7 +28,7 @@ Consider R's `sleep` dataset:
 ```{r plot-sleep}
 tapply(sleep$extra, sleep$group, summary)
 ggplot(sleep, aes(group, extra)) + 
-  geom_boxplot() + 
+  geom_boxplot(color = "lightgrey") + 
   geom_point(color = "blue", size = 3)
 ```
 
@@ -43,12 +43,12 @@ To answer this question, we need to understand:
 * Hypothesis testing
 * The Student's t-test
 
-# Random variables
+# Dataset variables
 
 A variable is an _attribute_ of the data. They fall into two categories:
 
-• Quantitative variables are those for which the value has numerical meaning. The value refers to a _specific amount_ of something.
-• Categorical variables indicate group membership. Gender is a classic example.
+* Quantitative variables are those for which the value has numerical meaning. The value refers to a _specific amount_ of something.
+* Categorical variables indicate group membership; this may be inherent (gender is a classic example) or assigned (treatment versus control groups).
 
 https://orla.osd.wednet.edu/common/pages/UserFile.aspx?fileId=30749993
 
@@ -58,27 +58,66 @@ A closely related idea is that of _random variables_:
 
 From [Encyclopedia Brittanica](https://www.britannica.com/science/statistics/Random-variables-and-probability-distributions). 
 
+In the `sleep` dataset:
+
+* `extra` is a numerical variable
+* `group` is a categorical variable
+* What is `ID`?
+
 # Population vs. Sample
 
-When you conduct a study, you define your population of interest. This is the entire set of elements that possess the characteristics of interest. In reality, you will rarely obtain observations or measurements on all elements of interest in a particular study simply because some of them will be inaccessible for a wide variety of reasons or it will be impractical to do so.
+When we conduct a study, we define the _population of interest_. This is the entire set of elements that possess the characteristics of interest. For example, for 
+`sleep`, this might be "all people", "all old women" (if all subjects could
+be described in this way), "all Maryland high school students who need soporifics",
+etc. 
+
+**We also never can observe or measure _all_ the 'elements of interest'.**
+By definition, populations are large are frequently inaccessible due to time,
+money, logistics, etc. And we _sample_ from the population.
 
 * A population includes all elements of interest.
-* A sample consists of a subset of observations from a population. As a result, multiple samples can be drawn from the same population.
+* A sample consists of a subset of observations from a population.
 
-The nomenclature, statistical formulas, notation, and vary depending on whether your analyzing a population or sample.
+This is important, because the nomenclature, statistical formulas, notation, 
+and scope of inference vary depending on whether your analyzing a 
+population or a sample.
 
-# Variance and standard deviation
+# Mean, variance, and standard deviation
 
-variance is the sum of deviations from the mean
+We can compute several _statistics_ from our sample(s) that are both
+informative and fundamental to statistical tests.
+
+The _mean_ of the sample is its average:
+
+$$
+\bar{x} = \frac{\sum_{i = 1}^{n}{x_i}}{n}
+$$
+To understand a variable’s distribution, we use measures of variability.
+_Variance_ measures the dispersion of the data from the mean:
+
+$$
+s^2 = \frac{\sum_{i = 1}^{n}{(x_i - \bar{x})^2}}{n - 1}
+$$
+Finally, the _standard deviation_ is the square root of the variance. 
+It has the same units as our original data, and indicates how close the data 
+are to the sample mean:
+
+$$
+s = \sqrt{s^2}
+$$
 
 The standard deviation is the square root of the variance. By taking the square root, we return the measure to the same scale as the mean. It indicates how close the data is to the mean.
 
+**As our sample size increases, its mean and variance approach that of the 
+overall population.** This is due to the [central limit theorem](https://en.wikipedia.org/wiki/Central_limit_theorem), 
+the core of much of modern statistics.
 
 # The normal distribution of a _population_
 
-https://en.wikipedia.org/wiki/Normal_distribution
-
-Most statistics assume a _normal distribution_, meaning that the data approximate a bell-shaped curve. In normal distributions, 68% of the data fall within ±1 standard deviation from the mean; 95% within 2 standard deviations, and 99% within 3 standard deviations.
+Many statistical tests assume a [normal distribution](https://en.wikipedia.org/wiki/Normal_distribution), 
+meaning that the data approximate a bell-shaped curve. 
+In normal distributions, 68% of the data fall within ±1 standard deviation 
+from the mean; 95% within 2 standard deviations, and 99% within 3.
 
 ```{r normal, echo=FALSE}
 add_sd_lines <- function(p, n_sd, ht, clr, lbl) {
@@ -100,7 +139,7 @@ distribution_graph_theme <- function() {
 p <- ggplot(data.frame(x = c(-4, 4)), aes(x = x)) +
   stat_function(fun = dnorm, size = 1) +
   distribution_graph_theme() +
-  labs(x = "Standard deviations", y = "")
+  labs(x = "Standard deviations from the mean", y = "")
 p <- add_sd_lines(p, 1, 0.2, "lightblue", "68.2%")
 p <- add_sd_lines(p, 2, 0.15, "blue", "95.4%")
 p <- add_sd_lines(p, 3, 0.1, "darkblue", "99.7%")
@@ -126,7 +165,7 @@ ggplot(dat, aes(x, y)) + geom_line(aes(color = df)) +
   stat_function(fun = dnorm, linetype = 2) +
   distribution_graph_theme() +
   theme(legend.position = c(0.8, 0.7)) +
-  labs(x = "Standard deviations", y = "") +
+  labs(x = "Standard deviations from the mean", y = "") +
   annotate("text", x = -2, y = 0.3, label = "Dashed line\nshows normal\ndistribution", size = 3)
 ```
 
@@ -135,11 +174,40 @@ ggplot(dat, aes(x, y)) + geom_line(aes(color = df)) +
 
 # The Student's t test
 
+Time to bring together all these concepts!
+
+A **t-test** measures the difference in group means divided by the pooled standard 
+error of the two group means. It then computes, based on the Student's t-distribution, how _likely_ it would be to observe that difference if there is 
+actually no difference between the groups.
+
+It is a [parametric](https://en.wikipedia.org/wiki/Parametric_statistics)
+test of difference, meaning that it assumes your data:
+
+* are independent
+* are (approximately) normally distributed.
+* have a similar amount of variance within each group being compared
+
 ```{r}
 group1 <- sleep[sleep$group == 1,]$extra
 group2 <- sleep[sleep$group == 2,]$extra
 t.test(group1, group2)
 ```
+
+`t.test` helpfully prints out
+
+* the alternative (or _null_) hypothesis: "true difference in means is not equal to 0"
+* the pooled _degrees of freedom_ (closely related to the sample size)
+* the _p-value_. Here it is 0.079, which traditionally would be interpreted as _weak evidence_ against the null hypothesis
+
+We might have a narrower null hypothesis, however, for example that group 2's
+mean is greater than that of group 1:
+
+```{r}
+t.test(group1, group2, alternative = "less")
+```
+
+Traditionally, this would be interpreted as _moderate evidence_ against
+the null hypothesis.
 
 # Paired versus unpaired
 
@@ -151,7 +219,7 @@ sleep[sleep$ID %in% c(1, 2, 9, 10),] %>%
   kableExtra::kable_styling(full_width = FALSE)
 ```
 
-`sleep` does not consist of **two random samples drawn from a population**;
+`sleep` **does not consist of two random samples drawn from a population**;
 rather, it is 10 random subjects (the `ID` column; see the help page) 
 _measured twice_, once for each drug. Visually:
 
@@ -165,12 +233,17 @@ ggplot(sleep, aes(group, extra)) +
                color = "blue", linetype = 2, size = 0.25)
 ```
 
-This means that we can use a **paired t-test**, which gives us
-more statistical power:
+This means that we can use a **paired t-test**:
 
 ```{r}
 t.test(group1, group2, paired = TRUE)
 ```
+
+This is _strong evidence_ against the null hypothesis.
+
+The pairing of samples reduces inter-subject variability (because it makes 
+comparisons between the same subject), and thus is more powerful than
+the unpaired t-test.
 
 
 # The End
