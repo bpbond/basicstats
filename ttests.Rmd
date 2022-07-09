@@ -50,8 +50,6 @@ A variable is an _attribute_ of the data. They fall into two categories:
 * Quantitative variables are those for which the value has numerical meaning. The value refers to a _specific amount_ of something.
 * Categorical variables indicate group membership; this may be inherent (gender is a classic example) or assigned (treatment versus control groups).
 
-https://orla.osd.wednet.edu/common/pages/UserFile.aspx?fileId=30749993
-
 A closely related idea is that of _random variables_:
 
 >A random variable is a numerical description of the outcome of a statistical experiment. A random variable that may assume only a finite number or an infinite sequence of values is said to be discrete; one that may assume any value in some interval on the real number line is said to be continuous.
@@ -203,6 +201,20 @@ ggplot(dat, aes(x, y)) + geom_line(aes(color = df)) +
 
 # Hypothesis testing
 
+Hypothesis testing is the process by which we reject or fail to reject statistical hypotheses. The two types of statistical hypotheses:
+
+• The null hypothesis, $H_0$, is the hypothesis that the result from the statistical analysis occurs purely by chance.
+• The alternative hypothesis, $H_1$ or $H_a$, is the hypothesis that the result is meaningful and not due to chance.
+
+**The result of the analysis is always used to test the null hypothesis.** 
+This means, in science, that we never "prove" hypotheses, we only "disprove" them.
+
+To test a statistical hypothesis, you:
+
+1. **State the null and alternative hypotheses**, in such a way that they are mutually exclusive. The null hypothesis is usually the opposite of the result that you hope to find.
+2. **Select the significance level.** This value (for example, 0.01, 0.05, or 0.10) represents the probability of obtaining a significant result if the null hypothesis is actually true...meaning, the chance that you rejected the null hypothesis when you should have failed to reject it (a "false positive").
+3. **Determine which statistical analysis to conduct.** 
+4. **Analyze the data** by calculating the _test statistic_ and determining the probability of that statistic. Is that probability larger than the significance level you selected, you fail to reject the null hypothesis; if it’s smaller, you do reject it.
 
 # The Student's t test
 
@@ -215,9 +227,9 @@ actually no difference between the groups.
 It is a [parametric](https://en.wikipedia.org/wiki/Parametric_statistics)
 test of difference, meaning that it assumes your data:
 
-* are independent
-* are (approximately) normally distributed.
-* have a similar amount of variance within each group being compared
+* are independent;
+* are (approximately) normally distributed; and
+* have a similar amount of variance within each group being compared.
 
 ```{r}
 group1 <- sleep[sleep$group == 1,]$extra
@@ -227,9 +239,9 @@ t.test(group1, group2)
 
 `t.test` helpfully prints out
 
-* the alternative (or _null_) hypothesis: "true difference in means is not equal to 0"
-* the pooled _degrees of freedom_ (closely related to the sample size)
-* the _p-value_. Here it is 0.079, which traditionally would be interpreted as _weak evidence_ against the null hypothesis
+* the alternative (as opposed to the _null_) hypothesis: "true difference in means is not equal to 0";
+* the pooled _degrees of freedom_ (closely related to the sample size); and
+* the _p-value_. Here it is 0.079, which traditionally would be interpreted as _no or weak evidence_ against the null hypothesis (because our significance level--see above--was by default 0.05).
 
 We might have a narrower null hypothesis, however, for example that group 2's
 mean is greater than that of group 1:
@@ -279,6 +291,9 @@ the unpaired t-test.
 
 
 # The End
+
+Much of the structure, and some of the language, in this file follows Microsoft's
+[Statistics Primer: A Brief Overview of Basic Statistical and Probability Principles](https://orla.osd.wednet.edu/common/pages/UserFile.aspx?fileId=30749993).
 
 The repository for this document is [here](https://github.com/bpbond/linear).
 
