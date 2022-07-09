@@ -1,3 +1,6 @@
-# linear
+# basicstats
 
-A non-technical introduction to linear regression and least squares using R.
+A minimally technical introduction, using R, to
+
+* Linear regression and least squares
+* Comparing groups using t-tests
