@@ -106,11 +106,43 @@ $$
 s = \sqrt{s^2}
 $$
 
-The standard deviation is the square root of the variance. By taking the square root, we return the measure to the same scale as the mean. It indicates how close the data is to the mean.
+By taking the square root, we return the measure to the same scale as the mean. It indicates how close the data is to the mean.
+
+```{r, echo=FALSE}
+dat <- tibble()
+for(s_val in 1:4) {
+  dat <- rbind(dat, tibble(s = paste("s =", s_val), 
+                           x = rnorm(n = 100, sd = s_val),
+                           y = rnorm(n = 100, sd = s_val)))
+}
+ggplot(dat, aes(x, y)) + geom_point() + facet_wrap(~s) +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank())
+```
+
+# The central limit theorem
 
 **As our sample size increases, its mean and variance approach that of the 
 overall population.** This is due to the [central limit theorem](https://en.wikipedia.org/wiki/Central_limit_theorem), 
 the core of much of modern statistics.
+
+Watch how the distribution (density) of the data change as sample size increases,
+getting closer and closer to the theoretical _normal distribution_ (dashed line):
+
+```{r, echo=FALSE}
+dat <- tibble()
+for(ss in c(5, 10, 100, 1000)) {
+  dat <- rbind(dat, tibble(ss = ss,
+                           x = rnorm(ss)))
+}
+ggplot(dat, aes(x)) + 
+  geom_density(size = 1) + 
+  facet_wrap(~ss) + 
+  stat_function(fun = dnorm, linetype = 2) +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank())
+```
+
 
 # The normal distribution of a _population_
 
