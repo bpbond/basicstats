@@ -14,7 +14,36 @@ library(ggplot2)
 theme_set(theme_bw())
 ```
 
+# Random variables
+
+A variable is an attribute that can be used to describe a person, place, or thing. In the case of statistics, it is any attribute that can be represented as a number. The numbers used to represent variables fall into two categories:
+• Quantitative variables are those for which the value has numerical meaning. The value refers to a _specific amount_ of something.
+• Categorical variables are those for which the value indicates group membership. Gender is a classic example.
+
+https://orla.osd.wednet.edu/common/pages/UserFile.aspx?fileId=30749993
+
+
+# Population vs. Sample
+
+When you conduct a study, you define your population of interest. This is the entire set of elements that possess the characteristics of interest. In reality, you will rarely obtain observations or measurements on all elements of interest in a particular study simply because some of them will be inaccessible for a wide variety of reasons or it will be impractical to do so.
+
+* A population includes all elements of interest.
+* A sample consists of a subset of observations from a population. As a result, multiple samples can be drawn from the same population.
+
+The nomenclature, statistical formulas, notation, and vary depending on whether your analyzing a population or sample.
+
+# Variance and standard deviation
+
+variance is the sum of deviations from the mean
+
+The standard deviation is the square root of the variance. By taking the square root, we return the measure to the same scale as the mean. It indicates how close the data is to the mean.
+
+
 # The normal distribution of a _population_
+
+https://en.wikipedia.org/wiki/Normal_distribution
+
+Most statistics assume a _normal distribution_, meaning that the data approximate a bell-shaped curve. In normal distributions, 68% of the data fall within ±1 standard deviation from the mean; 95% within 2 standard deviations, and 99% within 3 standard deviations.
 
 ```{r normal, echo=FALSE}
 add_sd_lines <- function(p, n_sd, ht, clr, lbl) {
@@ -65,6 +94,12 @@ ggplot(dat, aes(x, y)) + geom_line(aes(color = df)) +
   labs(x = "Standard deviations", y = "") +
   annotate("text", x = -2, y = 0.3, label = "Dashed line\nshows normal\ndistribution", size = 3)
 ```
+
+# Hypothesis testing
+
+# The Student's t test
+
+
 
 
 # The End
