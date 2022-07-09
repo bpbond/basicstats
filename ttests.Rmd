@@ -1,0 +1,76 @@
+---
+title: "Comparing groups using t tests"
+author: "Ben"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(20211002)
+
+library(tibble)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+# The normal distribution of a _population_
+
+```{r normal, echo=FALSE}
+add_sd_lines <- function(p, n_sd, ht, clr, lbl) {
+  p + annotate(geom = "segment", x = -n_sd, y = ht, xend = n_sd, yend = ht, 
+               arrow = arrow(ends = "both"), size = 0.75, color = clr) +
+    geom_vline(xintercept = c(-n_sd, n_sd), color = clr, linetype = 2) +
+    geom_label(x = 0, y = ht, label = lbl, color = clr)
+}
+
+distribution_graph_theme <- function() {
+  theme_minimal() %+replace%
+  theme(axis.text.y = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text.x = element_text(face = "bold"),
+        axis.title.x = element_text(size = 12, face = "bold"))
+}
+
+p <- ggplot(data.frame(x = c(-4, 4)), aes(x = x)) +
+  stat_function(fun = dnorm, size = 1) +
+  distribution_graph_theme() +
+  labs(x = "Standard deviations", y = "")
+  p <- add_sd_lines(p, 1, 0.2, "lightblue", "68.2%")
+p <- add_sd_lines(p, 2, 0.15, "blue", "95.4%")
+p <- add_sd_lines(p, 3, 0.1, "darkblue", "99.7%")
+p
+```
+
+# Student's t distribution
+
+From [Wikipedia](https://en.wikipedia.org/wiki/Student%27s_t-distribution):
+
+>In probability and statistics, Student's t-distribution (or simply the t-distribution) is any member of a family of continuous probability distributions that arise when estimating the mean of a **normally distributed population** in situations where the **sample size is small** and the population's **standard deviation is unknown**.
+
+```{r students, echo=FALSE}
+dat <- data.frame()
+for(df in c(1, 2, 5, 10, 20)) {
+  dat <- rbind(dat, tibble(x = seq(-4, 4, by = 0.05), 
+                           y = dt(x, df = df),
+                           df = df))
+}
+dat$df <- as.factor(dat$df)
+ggplot(dat, aes(x, y)) + geom_line(aes(color = df)) +
+  scale_color_discrete("Degrees of\nfreedom") +
+  stat_function(fun = dnorm, linetype = 2) +
+  distribution_graph_theme() +
+  theme(legend.position = c(0.8, 0.7)) +
+  labs(x = "Standard deviations", y = "") +
+  annotate("text", x = -2, y = 0.3, label = "Dashed line\nshows normal\ndistribution", size = 3)
+```
+
+
+# The End
+
+The repository for this document is [here](https://github.com/bpbond/linear).
+
+```{r, echo=FALSE}
+sessionInfo()
+```
