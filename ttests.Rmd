@@ -1,5 +1,5 @@
 ---
-title: "Comparing groups using t tests"
+title: "Testing for group differences"
 author: "Ben"
 date: "`r Sys.Date()`"
 output: html_document
@@ -10,18 +10,53 @@ knitr::opts_chunk$set(echo = TRUE)
 set.seed(20211002)
 
 library(tibble)
+library(tidyr)
 library(ggplot2)
 theme_set(theme_bw())
 ```
 
+# How do we test for group differences?
+
+Consider R's `sleep` dataset:
+
+```{r, eval=FALSE}
+?sleep
+```
+
+>Data which show the effect of two soporific drugs (increase in hours of sleep compared to control) on 10 patients. A data frame with 20 observations on 3 variables.
+
+```{r plot-sleep}
+tapply(sleep$extra, sleep$group, summary)
+ggplot(sleep, aes(group, extra)) + 
+  geom_boxplot() + 
+  geom_point(color = "blue", size = 3)
+```
+
+**How do we know if the differences between these groups are _statistically significant?_**
+
+To answer this question, we need to understand:
+
+* Random variables
+* The scope of our inference: populations versus samples
+* Sample statistics: variance and standard deviation
+* The normal distribution
+* Hypothesis testing
+* The Student's t-test
+
 # Random variables
 
-A variable is an attribute that can be used to describe a person, place, or thing. In the case of statistics, it is any attribute that can be represented as a number. The numbers used to represent variables fall into two categories:
+A variable is an _attribute_ of the data. They fall into two categories:
+
 • Quantitative variables are those for which the value has numerical meaning. The value refers to a _specific amount_ of something.
-• Categorical variables are those for which the value indicates group membership. Gender is a classic example.
+• Categorical variables indicate group membership. Gender is a classic example.
 
 https://orla.osd.wednet.edu/common/pages/UserFile.aspx?fileId=30749993
 
+A closely related idea is that of _random variables_:
+
+>A random variable is a numerical description of the outcome of a statistical experiment. A random variable that may assume only a finite number or an infinite sequence of values is said to be discrete; one that may assume any value in some interval on the real number line is said to be continuous.
+
+From [Encyclopedia Brittanica](https://www.britannica.com/science/statistics/Random-variables-and-probability-distributions). 
 
 # Population vs. Sample
 
@@ -55,18 +90,18 @@ add_sd_lines <- function(p, n_sd, ht, clr, lbl) {
 
 distribution_graph_theme <- function() {
   theme_minimal() %+replace%
-  theme(axis.text.y = element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        axis.text.x = element_text(face = "bold"),
-        axis.title.x = element_text(size = 12, face = "bold"))
+    theme(axis.text.y = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text.x = element_text(face = "bold"),
+          axis.title.x = element_text(size = 12, face = "bold"))
 }
 
 p <- ggplot(data.frame(x = c(-4, 4)), aes(x = x)) +
   stat_function(fun = dnorm, size = 1) +
   distribution_graph_theme() +
   labs(x = "Standard deviations", y = "")
-  p <- add_sd_lines(p, 1, 0.2, "lightblue", "68.2%")
+p <- add_sd_lines(p, 1, 0.2, "lightblue", "68.2%")
 p <- add_sd_lines(p, 2, 0.15, "blue", "95.4%")
 p <- add_sd_lines(p, 3, 0.1, "darkblue", "99.7%")
 p
@@ -97,9 +132,45 @@ ggplot(dat, aes(x, y)) + geom_line(aes(color = df)) +
 
 # Hypothesis testing
 
+
 # The Student's t test
 
+```{r}
+group1 <- sleep[sleep$group == 1,]$extra
+group2 <- sleep[sleep$group == 2,]$extra
+t.test(group1, group2)
+```
 
+# Paired versus unpaired
+
+**But wait!** Let's look again at `sleep` (only showing a few rows for clarity):
+
+```{r, echo=FALSE}
+sleep[sleep$ID %in% c(1, 2, 9, 10),] %>% 
+  knitr::kable() %>% 
+  kableExtra::kable_styling(full_width = FALSE)
+```
+
+`sleep` does not consist of **two random samples drawn from a population**;
+rather, it is 10 random subjects (the `ID` column; see the help page) 
+_measured twice_, once for each drug. Visually:
+
+```{r plot-paired-sleep, echo=FALSE}
+sleep2 <- pivot_wider(sleep, names_from =  "group", values_from = "extra")
+
+ggplot(sleep, aes(group, extra)) + 
+  geom_boxplot(color = "lightgrey") + 
+  geom_point(color = "blue", size = 3) + 
+  geom_segment(data = sleep2, x = 1, xend = 2, aes(y = `1`, yend = `2`),
+               color = "blue", linetype = 2, size = 0.25)
+```
+
+This means that we can use a **paired t-test**, which gives us
+more statistical power:
+
+```{r}
+t.test(group1, group2, paired = TRUE)
+```
 
 
 # The End
