@@ -169,7 +169,8 @@ distribution_graph_theme <- function() {
 p <- ggplot(data.frame(x = c(-4, 4)), aes(x = x)) +
   stat_function(fun = dnorm, size = 1) +
   distribution_graph_theme() +
-  labs(x = "Standard deviations from the mean", y = "")
+  labs(title = expression(paste(italic(N), "(", mu, " = 0, ", sigma," = 1)")),
+       x = "Standard deviations from the mean", y = "")
 p <- add_sd_lines(p, 1, 0.2, "lightblue", "68.2%")
 p <- add_sd_lines(p, 2, 0.15, "blue", "95.4%")
 p <- add_sd_lines(p, 3, 0.1, "darkblue", "99.7%")
