@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 set.seed(20211002)
 
 library(tibble)
-library(tidyr)
 library(ggplot2)
 theme_set(theme_minimal())
 ```
@@ -217,13 +216,13 @@ ggplot(dat, aes(x, y)) + geom_line(aes(color = df)) +
 
 # Hypothesis testing
 
-Hypothesis testing is the process by which we reject or fail to reject statistical hypotheses. The two types of statistical hypotheses:
+Hypothesis testing is the process by which we reject or fail to reject statistical hypotheses. The two types of statistical hypotheses are:
 
-• The null hypothesis, $H_0$, is the hypothesis that the result from the statistical analysis occurs purely by chance.
-• The alternative hypothesis, $H_1$ or $H_a$, is the hypothesis that the result is meaningful and not due to chance.
+* The null hypothesis, $H_0$, is the hypothesis that the result from the statistical analysis occurs purely by chance.
+* The alternative hypothesis, $H_1$ or $H_a$, is the hypothesis that the result is meaningful and not due to chance.
 
-**The result of the analysis is always used to test the null hypothesis.** 
-This means, in science, that we never "prove" hypotheses, we only "disprove" them.
+**Analyses always test the null hypothesis.** 
+This means, in science, that we never _prove_ hypotheses, we only _disprove_ them.
 
 To test a statistical hypothesis, you:
 
@@ -273,17 +272,17 @@ the null hypothesis.
 
 # Paired versus unpaired
 
-**But wait!** Let's look again at `sleep` (only showing a few rows for clarity):
+**But wait!** Let's look again at `sleep`:
 
-```{r, echo=FALSE}
-sleep[sleep$ID %in% c(1, 2, 9, 10),] %>% 
-  knitr::kable() %>% 
-  kableExtra::kable_styling(full_width = FALSE)
+```{r, look-again}
+head(sleep)
+library(tidyr)
+sleep %>% pivot_wider(names_from = "group", values_from = "extra")
 ```
 
-`sleep` **does not consist of two random samples drawn from a population**;
+`sleep` **does not consist of two separate random samples drawn from a population**;
 rather, it is 10 random subjects (the `ID` column; see the help page) 
-_measured twice_, once for each drug. Visually:
+measured twice, once for each drug. Visually:
 
 ```{r plot-paired-sleep, echo=FALSE}
 sleep2 <- pivot_wider(sleep, names_from =  "group", values_from = "extra")
@@ -310,7 +309,7 @@ between the two drugs.
 
 # The End
 
-Much of the structure, and some of the language, in this file follows Microsoft's
+Some of the structure and language in this file follows Microsoft's
 [Statistics Primer: A Brief Overview of Basic Statistical and Probability Principles](https://orla.osd.wednet.edu/common/pages/UserFile.aspx?fileId=30749993).
 
 The repository for this document is [here](https://github.com/bpbond/linear).
