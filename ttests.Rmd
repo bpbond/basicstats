@@ -52,7 +52,7 @@ A variable is an _attribute_ of the data. They fall into two categories:
 
 A closely related idea is that of _random variables_:
 
->A random variable is a numerical description of the outcome of a statistical experiment. A random variable that may assume only a finite number or an infinite sequence of values is said to be discrete; one that may assume any value in some interval on the real number line is said to be continuous.
+>A random variable is a numerical description of the outcome of a statistical experiment. A random variable that may assume only a finite number or an infinite sequence of values is said to be _discrete_; one that may assume any value in some interval on the real number line is said to be _continuous_.
 
 From [Encyclopedia Brittanica](https://www.britannica.com/science/statistics/Random-variables-and-probability-distributions). 
 
@@ -69,12 +69,12 @@ When we conduct a study, we define the _population of interest_. This is the ent
 be described in this way), "all Maryland high school students who need soporifics",
 etc. 
 
-**We also never can observe or measure _all_ the 'elements of interest'.**
+**We generally cannot observe or measure _all_ the 'elements of interest'.**
 By definition, populations are large are frequently inaccessible due to time,
-money, logistics, etc. And we _sample_ from the population.
+money, logistics, etc. And so we randomly sample from the population.
 
-* A population includes all elements of interest.
-* A sample consists of a subset of observations from a population.
+* A _population_ includes all elements of interest; while
+* A _sample_ consists of a subset of observations from a population.
 
 This is important, because the nomenclature, statistical formulas, notation, 
 and scope of inference vary depending on whether your analyzing a 
@@ -88,34 +88,36 @@ informative and fundamental to statistical tests.
 The _mean_ of the sample is its average:
 
 $$
-\bar{x} = \frac{\sum_{i = 1}^{n}{x_i}}{n}
+\huge\bar{x} = \frac{\sum_{i = 1}^{n}{x_i}}{n}
 $$
 To understand a variable’s distribution, we use measures of variability.
 _Variance_ measures the dispersion of the data from the mean:
 
 $$
-s^2 = \frac{\sum_{i = 1}^{n}{(x_i - \bar{x})^2}}{n - 1}
+\huge s^2 = \frac{\sum_{i = 1}^{n}{(x_i - \bar{x})^2}}{n - 1}
 $$
 Finally, the _standard deviation_ is the square root of the variance. 
 It has the same units as our original data, and indicates how close the data 
 are to the sample mean:
 
 $$
-s = \sqrt{s^2}
+\huge s = \sqrt{s^2}
 $$
 
 By taking the square root, we return the measure to the same scale as the mean. It indicates how close the data is to the mean.
 
 ```{r, echo=FALSE}
 dat <- tibble()
-for(s_val in 1:4) {
+for(s_val in c(0.5, 1, 2, 4)) {
   dat <- rbind(dat, tibble(s = paste("s =", s_val), 
                            x = rnorm(n = 100, sd = s_val),
                            y = rnorm(n = 100, sd = s_val)))
 }
-ggplot(dat, aes(x, y)) + geom_point() + facet_wrap(~s) +
+ggplot(dat, aes(x, y, color = s)) + geom_point() + facet_wrap(~s) +
   theme(axis.title = element_blank(),
-        axis.text = element_blank())
+        axis.text = element_blank(),
+        strip.text = element_text(size = 14),
+        legend.position = "none")
 ```
 
 # The central limit theorem
@@ -133,12 +135,14 @@ for(ss in c(5, 10, 100, 1000)) {
   dat <- rbind(dat, tibble(ss = ss,
                            x = rnorm(ss)))
 }
-ggplot(dat, aes(x)) + 
+ggplot(dat, aes(x, color = as.factor(ss))) + 
   geom_density(size = 1) + 
   facet_wrap(~ss) + 
   stat_function(fun = dnorm, linetype = 2) +
   theme(axis.title = element_blank(),
-        axis.text = element_blank())
+        axis.text = element_blank(),
+        strip.text = element_text(size = 14),
+        legend.position = "none")
 ```
 
 
