@@ -15,6 +15,7 @@ library(ggplot2)
 theme_set(theme_minimal())
 ```
 
+
 # How do we test for group differences?
 
 Consider R's `sleep` dataset:
@@ -43,6 +44,7 @@ To answer this question, we need to understand:
 * Hypothesis testing
 * The Student's t-test
 
+
 # Dataset variables
 
 A variable is an _attribute_ of the data. They fall into two categories:
@@ -62,6 +64,7 @@ In the `sleep` dataset:
 * `group` is a categorical variable
 * What is `ID`?
 
+
 # Population vs. Sample
 
 When we conduct a study, we define the _population of interest_. This is the entire set of elements that possess the characteristics of interest. For example, for 
@@ -80,6 +83,7 @@ This is important, because the nomenclature, statistical formulas, notation,
 and scope of inference vary depending on whether your analyzing a 
 population or a sample.
 
+
 # Mean, variance, and standard deviation
 
 We can compute several _statistics_ from our sample(s) that are both
@@ -96,15 +100,18 @@ _Variance_ measures the dispersion of the data from the mean:
 $$
 \huge s^2 = \frac{\sum_{i = 1}^{n}{(x_i - \bar{x})^2}}{n - 1}
 $$
-Finally, the _standard deviation_ is the square root of the variance. 
-It has the same units as our original data, and indicates how close the data 
-are to the sample mean:
+That `n - 1` in the denominator constitutes the [degrees of freedom](https://en.wikipedia.org/wiki/Degrees_of_freedom_(statistics)): 
+the number of independent pieces of information that go into the estimate
+of a test statistic.
+
+Finally, the _standard deviation_ is the square root of the variance:
 
 $$
 \huge s = \sqrt{s^2}
 $$
 
-By taking the square root, we return the measure to the same scale as the mean. It indicates how close the data is to the mean.
+By taking the square root, we return the measure to the original units of _x_ 
+The standard deviation indicates how close the data are to the mean:
 
 ```{r, echo=FALSE}
 dat <- tibble()
@@ -120,14 +127,16 @@ ggplot(dat, aes(x, y, color = s)) + geom_point() + facet_wrap(~s) +
         legend.position = "none")
 ```
 
+
 # The central limit theorem
 
 **As our sample size increases, its mean and variance approach that of the 
 overall population.** This is due to the [central limit theorem](https://en.wikipedia.org/wiki/Central_limit_theorem), 
 the core of much of modern statistics.
 
-Watch how the distribution (density) of the data change as sample size increases,
-getting closer and closer to the theoretical _normal distribution_ (dashed line):
+Watch how the distribution (density) of these random data change as
+the sample size increases, getting closer and closer to the 
+theoretical _normal distribution_ (dashed line):
 
 ```{r, echo=FALSE}
 dat <- tibble()
@@ -181,6 +190,7 @@ p <- add_sd_lines(p, 3, 0.1, "darkblue", "99.7%")
 p
 ```
 
+
 # Student's t distribution
 
 From [Wikipedia](https://en.wikipedia.org/wiki/Student%27s_t-distribution):
@@ -204,6 +214,7 @@ ggplot(dat, aes(x, y)) + geom_line(aes(color = df)) +
   annotate("text", x = -2, y = 0.3, label = "Dashed line\nshows normal\ndistribution", size = 3)
 ```
 
+
 # Hypothesis testing
 
 Hypothesis testing is the process by which we reject or fail to reject statistical hypotheses. The two types of statistical hypotheses:
@@ -220,6 +231,7 @@ To test a statistical hypothesis, you:
 2. **Select the significance level.** This value (for example, 0.01, 0.05, or 0.10) represents the probability of obtaining a significant result if the null hypothesis is actually true...meaning, the chance that you rejected the null hypothesis when you should have failed to reject it (a "false positive").
 3. **Determine which statistical analysis to conduct.** 
 4. **Analyze the data** by calculating the _test statistic_ and determining the probability of that statistic. Is that probability larger than the significance level you selected, you fail to reject the null hypothesis; if it’s smaller, you do reject it.
+
 
 # The Student's t test
 
@@ -246,7 +258,7 @@ t.test(group1, group2)
 
 * the alternative (as opposed to the _null_) hypothesis: "true difference in means is not equal to 0";
 * the pooled _degrees of freedom_ (closely related to the sample size); and
-* the _p-value_. Here it is 0.079, which traditionally would be interpreted as _no or weak evidence_ against the null hypothesis (because our significance level--see above--was by default 0.05).
+* the _p-value_. Here it is 0.079, which traditionally would be interpreted as _no or weak evidence_ against the null hypothesis (because our significance level--see above--is by default 0.05).
 
 We might have a narrower null hypothesis, however, for example that group 2's
 mean is greater than that of group 1:
@@ -257,6 +269,7 @@ t.test(group1, group2, alternative = "less")
 
 Traditionally, this would be interpreted as _moderate evidence_ against
 the null hypothesis.
+
 
 # Paired versus unpaired
 
@@ -282,17 +295,17 @@ ggplot(sleep, aes(group, extra)) +
                color = "blue", linetype = 2, size = 0.25)
 ```
 
-This means that we can use a **paired t-test**:
+This means that we can use a **paired t-test**, which is more powerful than
+the unpaired t-test because the pairing of samples reduces inter-subject 
+variability (as it makes comparisons between the same subject).
 
 ```{r}
 t.test(group1, group2, paired = TRUE)
 ```
 
-This is _strong evidence_ against the null hypothesis.
-
-The pairing of samples reduces inter-subject variability (because it makes 
-comparisons between the same subject), and thus is more powerful than
-the unpaired t-test.
+This is _strong evidence_ against the null hypothesis: we would observe 
+such data only about 0.28% of the time if there's actually no difference 
+between the two drugs.
 
 
 # The End
