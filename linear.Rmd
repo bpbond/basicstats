@@ -24,9 +24,9 @@ d <- data.frame(x = 1:4, y = c(6, 5, 7, 10))
 m <- lm(y ~ x, data = d)
 d$pred <- predict(m)
 ggplot(d, aes(x, y)) + 
-  geom_segment(aes(xend = x, yend = pred), size = 1.5, color = "green") +
+  geom_segment(aes(xend = x, yend = pred), linewidth = 1.5, color = "green") +
   geom_point(color = "red", size = 4) +
-  geom_line(aes(y = pred), size = 2, color = "blue")
+  geom_line(aes(y = pred), linewidth = 2, color = "blue")
 ```
 
 In linear regression, the observations (red) are assumed to be the result of random deviations (green) from an underlying relationship (blue) between a dependent variable (y) and an independent variable (x).
@@ -88,11 +88,11 @@ ggplot(dat, aes(x, y, color = group)) +
 Unfortunately, if we plot the **model residuals** (the difference between the _predicted_ values and the _actual_ y values), it's obvious that this model is not satisfactory. 
 
 ```{r, message=FALSE}
-ggplot(dat, aes(m1, y - m1, color = group)) + 
+ggplot(dat, aes(m1, y - m1)) + 
   xlab(expression(Predicted~value~(hat(y)))) + 
   ylab(expression(Residual~(y-hat(y)))) +
-  geom_point(size = 4) + 
-  geom_smooth(aes(group = 1), se = FALSE)
+  geom_point(aes(color = group), size = 4) + 
+  geom_smooth(se = FALSE)
 ```
 
 (The blue loess smoother simply makes it easier to see trends.)
@@ -143,11 +143,11 @@ ggplot(dat, aes(x, y, color = group)) +
   geom_point(size = 4) +
   geom_line(aes(y = m2), linetype = 2)
 
-ggplot(dat, aes(m2, y - m2, color = group)) + 
+ggplot(dat, aes(m2, y - m2)) + 
   xlab(expression(Predicted~value~(hat(y)))) + 
   ylab(expression(Residual~(y-hat(y)))) +
-  geom_point(size = 4) + 
-  geom_smooth(aes(group = 1), se = FALSE)
+  geom_point(aes(color = group), size = 4) + 
+  geom_smooth(se = FALSE)
 ```
 
 The residual plot is still pretty weird looking, because we're underpredicting `A` (and overpredicting `B`) at low `x` values, and overpredicting `A` (and underpredicting `B`) at high `x`.
@@ -217,11 +217,11 @@ ggplot(dat, aes(x, y, color = group)) +
   geom_point(size = 4) +
   geom_line(aes(y = m4), linetype = 2)
 
-ggplot(dat, aes(m4, y - m4, color = group)) + 
+ggplot(dat, aes(m4, y - m4)) + 
   xlab(expression(Predicted~value~(hat(y)))) + 
   ylab(expression(Residual~(y-hat(y)))) +
-  geom_point(size = 4) + 
-  geom_smooth(aes(group = 1), se = FALSE)
+  geom_point(aes(color = group), size = 4) + 
+  geom_smooth(se = FALSE)
 ```
 
 ## Overfitting and removing terms
