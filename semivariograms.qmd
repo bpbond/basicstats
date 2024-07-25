@@ -1,11 +1,13 @@
 ---
 title: "Spatial semivariograms"
-format: html
+format:
+  html:
+    toc: true
 author: Ben Bond-Lamberty
 editor: visual
 ---
 
-## Theory
+# Theory
 
 ### Variance
 
@@ -48,9 +50,8 @@ The following parameters are often used to describe variograms:
 
 -   *nugget*: The semivariogram value at lag 0. This is often taken as measurement error.
 
-```{=html}
 <!-- -->
-```
+
 -   *sill*: The limit (asymptote) of the semivariogram at the lag goes to infinity.
 
 -   *range*: The distance at which the sill is attained, or difference of the semivariogram from the sill value becomes negligible.
@@ -59,7 +60,7 @@ The following parameters are often used to describe variograms:
 
 By Asim Biswas & Bing Cheng Si - <https://www.intechopen.com/chapters/39857,> CC BY 3.0, <https://commons.wikimedia.org/w/index.php?curid=116105041>
 
-## The `meuse` dataset
+# Empirical semivariograms
 
 Consider the `meuse` dataset that is included in the `sp` package:
 
@@ -96,8 +97,6 @@ Intuitively, and by looking at the spatial plot above, it seems like samples tak
 
 Like most real-world datasets, `meuse` does not have data at every possible sampling point, and so we first compute the variance between observations at different distances from each other, and then fit an [empirical semivariogram](https://en.wikipedia.org/wiki/Variogram#Empirical_variogram).
 
-## An empirical semivariogram
-
 ```{r}
 library(gstat)
 # gstat::variogram needs to know which columns have the 
@@ -120,7 +119,7 @@ plot(v)
 
 It looks like these data have a *nugget* of \~0.1, a *sill* of \~0.6, and a *range* of \~1000. But to get precise values for these parameters, we need to fit a model to our empirical data.
 
-## Fit a semivariogram model
+# Model-fitting
 
 Different theoretical semivariogram models make different assumptions and have [different fitted forms](https://en.wikipedia.org/wiki/Variogram#Variogram_models). We can visualize some of these:
 
@@ -170,3 +169,9 @@ ggplot(v, aes(dist, gamma)) +
             aes(distance, semivariance),
             linetype = 2)
 ```
+
+# Final notes
+
+The simple example above assumed our data were *isotropic*: the spatial dependency was the same regardless of direction. But in many cases this will not be true — the data will be *anisotopic* and so non-uniform depending on direction — and this needs to be accounted for.
+
+Similarly, the example above doesn't account for any other factors, but often we will first fit a model (for example, of how soil respiration is related to temperature and moisture) and then do a spatial analysis of the [model residuals](https://en.wikipedia.org/wiki/Errors_and_residuals). The `nlme` package is useful for this.
