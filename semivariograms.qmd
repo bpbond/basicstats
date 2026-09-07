@@ -1,5 +1,7 @@
 ---
 title: "Spatial semivariograms"
+date: now
+date-format: "YYYY-MM-DD HH:mm:ssZ"
 format:
   html:
     toc: true
@@ -25,10 +27,11 @@ $$
 Var(X) = \frac{1}{n-1} \sum_{i=1}^{n} (x_{i}-\mu)^2 
 $$
 
-Variance can be calculated by R's `var` function:
+Such sample variance can be calculated by R's `var` function:
 
 ```{r}
 var(1:6)
+sum((1:6 - mean(1:6)) ^ 2) / (6 - 1)
 sd(1:6) # = sqrt(var(1:6))
 ```
 
@@ -175,3 +178,5 @@ ggplot(v, aes(dist, gamma)) +
 The simple example above assumed our data were *isotropic*: the spatial dependency was the same regardless of direction. But in many cases this will not be true — the data will be *anisotopic* and so non-uniform depending on direction — and this needs to be accounted for.
 
 Similarly, the example above doesn't account for any other factors, but often we will first fit a model (for example, of how soil respiration is related to temperature and moisture) and then do a spatial analysis of the [model residuals](https://en.wikipedia.org/wiki/Errors_and_residuals). The `nlme` package is useful for this.
+
+All code for this presentation is available at <https://github.com/bpbond/basicstats>.
