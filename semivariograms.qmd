@@ -15,17 +15,13 @@ editor: visual
 
 The *variance* of a population (a set of values) $X$ is defined as
 
-$$
-Var(X) = \frac{1}{n} \sum_{i=1}^{n} (x_{i}-\mu)^2 
-$$
+$$Var(X) = \frac{1}{n} \sum_{i=1}^{n} (x_{i}-\mu)^2 $$
 
 where $\mu$ is the average value of $X$. In turn, the *standard deviation* is the square root of the variance.
 
 But usually we want the variance of real-world *sample* data, which by definition is a subset of of all possible observations that could be made. For [technical reasons](https://en.wikipedia.org/wiki/Variance#Population_variance_and_sample_variance), to eliminate bias arising from our limited sample the variance is calculated as
 
-$$
-Var(X) = \frac{1}{n-1} \sum_{i=1}^{n} (x_{i}-\mu)^2 
-$$
+$$Var(X) = \frac{1}{n-1} \sum_{i=1}^{n} (x_{i}-\mu)^2 $$
 
 Such sample variance can be calculated by R's `var` function:
 
@@ -41,9 +37,7 @@ In spatial statistics, the theoretical variogram is a function describing the de
 
 With real-world data we generally calculate the *empirical semivariogram* $\hat{\gamma}$, defined as half the average squared difference between the values separated at distance $h$:
 
-$$
-\hat{\gamma}(h) = \frac{1}{2|N(h)|} \sum_{(i,j) \in{N(h)}}^{} |z_{i}-z_{j}|^2
-$$
+$$\hat{\gamma}(h) = \frac{1}{2|N(h)|} \sum_{(i,j) \in{N(h)}}^{} |z_{i}-z_{j}|^2$$
 
 In other words, each pair of points separated by $h$ form the set of points $N(h)$; the number of these points in this bin is $|N(h)|$. Then for each pair of points $i,j$ the square of the difference in the observation is calculated: $|z_{i}-z_{j}|^2$. These squared differences are added together and normalized by the number of point pairs, and divided by 2 for the semivariogram value at this "lag" (distance of separation).
 
@@ -51,13 +45,13 @@ In practice, we group the lags into bins (groups of numerically similar separati
 
 The following parameters are often used to describe variograms:
 
--   *nugget*: The semivariogram value at lag 0. This is often taken as measurement error.
+- *nugget*: The semivariogram value at lag 0. This is often taken as measurement error.
 
 <!-- -->
 
--   *sill*: The limit (asymptote) of the semivariogram at the lag goes to infinity.
+- *sill*: The limit (asymptote) of the semivariogram at the lag goes to infinity.
 
--   *range*: The distance at which the sill is attained, or difference of the semivariogram from the sill value becomes negligible.
+- *range*: The distance at which the sill is attained, or difference of the semivariogram from the sill value becomes negligible.
 
 ![](Schematic_variogram.svg)
 

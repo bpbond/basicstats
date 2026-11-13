@@ -179,11 +179,11 @@ ggplot(dat, aes(x, y, color = group)) +
   geom_point(size = 4) +
   geom_line(aes(y = m3), linetype = 2)
 
-ggplot(dat, aes(m3, y - m3, color = group)) + 
+ggplot(dat, aes(m3, y - m3)) + 
   xlab(expression(Predicted~value~(hat(y)))) + 
   ylab(expression(Residual~(y-hat(y)))) +
-  geom_point(size = 4) + 
-  geom_smooth(aes(group = 1), se = FALSE)
+  geom_point(aes(color = group), size = 4) + 
+  geom_smooth(se = FALSE)
 ```
 
 This...this is a pretty good looking model. It explains almost all the variability in the data, and the residual plot looks good.
